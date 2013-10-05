@@ -28,6 +28,8 @@ if ('undefined' === typeof Roles) {
   Roles = {}
 }
 
+"use strict"
+
 /**
  * Create a new role. Whitespace will be trimmed.
  *
@@ -73,7 +75,9 @@ Roles.deleteRole = function (role) {
     return
   }
 
-  var foundExistingUser = Meteor.users.findOne({roles: {$in: [role]}}, {_id: 1})
+  var foundExistingUser = Meteor.users.findOne(
+                                  {roles: {$in: [role]}}, 
+                                  {fields: {_id: 1}})
 
   if (foundExistingUser) {
     throw new Meteor.Error(403, 'Role in use')
@@ -192,7 +196,7 @@ Roles.removeUsersFromRoles = function (users, roles) {
  * @method userIsInRole
  * @param {String|Object} user Id of user or actual user object
  * @param {String|Array} roles Name of role or Array of roles to check against.  If array, will return true if user is in _any_ role.
- * @return {Boolean} true if user is in _any_ of the target roles
+ * @return {Object|Boolean} user object if user is in _any_ of the target roles, false otherwise
  */
 Roles.userIsInRole = function (user, roles) {
   var id,
@@ -221,9 +225,7 @@ Roles.userIsInRole = function (user, roles) {
   if (!id) return false
 
   return Meteor.users.findOne(
-    { _id: id, roles: { $in: roles } },
-    { _id: 1 }
-  )
+    { _id: id, roles: { $in: roles } })
 }
 
 /**
@@ -236,8 +238,7 @@ Roles.userIsInRole = function (user, roles) {
 Roles.getRolesForUser = function (user) {
   var user = Meteor.users.findOne(
     { _id: user},
-    { _id: 0, roles: 1}
-  )
+    {fields: { _id: 0, roles: 1}})
 
   return user ? user.roles : undefined
 }
